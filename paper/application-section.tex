@@ -1,0 +1,218 @@
+% Section only. Merge application-references.bib into the manuscript bibliography.
+% Requires booktabs and natbib; alg:gd is defined in the main manuscript.
+\section{Application Studies}\label{Sec: applications}
+
+We study cross-hospital disease prediction, transfer of air-quality prediction
+across monitoring stations, and positive-unlabeled spam ranking. In the first
+two studies, client groups correspond to the hospitals and monitoring stations
+identified in the original datasets. For spam, we construct a positive-unlabeled
+learning task and assign emails to three clients. These studies
+address two distinct questions: whether density-ratio correction improves the
+downstream task, and whether distributed estimation retains the accuracy of
+pooled estimation when source observations remain at their clients.
+
+\subsection{Methods and Evaluation}
+
+Let $P=\sum_{c=1}^C\pi_cP_c$ denote the source mixture and $Q$ the server
+distribution. We compare distributed gradient descent (GD;
+Algorithm~\ref{alg:gd}), closed-form random-feature KuLSIF (RF), and pooled
+Gaussian-kernel KuLSIF (Kernel). Kernel uses the same fitting observations as
+GD and provides a centralized accuracy reference. We also consider a local
+approach (Local):
+each client independently fits exact-kernel KuLSIF using only its own source
+observations and the common server fitting and validation samples. No
+information is exchanged among clients during local fitting. This local
+baseline estimates $q/p_c$ rather than the common pooled ratio $q/p$.
+
+All methods share the same data splits and target-only feature standardization;
+missing predictors are imputed using fitting-server means. Each ratio method
+selects its bandwidth and regularization separately using held-out KuLSIF
+loss, without downstream evaluation outcomes. Bandwidths are
+$\{0.5,1,2\}\sigma_0$, where $\sigma_0$ is the median fitting-server
+pairwise distance. The hospital and air-quality studies use
+$\lambda\in\{0.01,0.1\}$, $R=128$ features, and $3000$ GD updates per
+candidate. The higher-dimensional spam study uses
+$\lambda\in\{0.001,0.01,0.1\}$, $R=512$, and $5000$ updates. GD starts
+at zero, uses step size $(2+\lambda)^{-1}$, and shares the same feature
+randomness with RF.
+
+For the two prediction studies, source observations for ratio fitting,
+validation, and predictive-model training are disjoint. The server provides
+covariates for ratio estimation; its held-out outcomes are used only to
+evaluate the final predictions. Given $w(x)=\max\{0,\widehat r(x)\}$, the
+predictive model minimizes
+\[
+ \frac{\sum_{c=1}^C\sum_{i=1}^{s_c}
+       w(X_{ci}^{\mathrm{model}})
+       \ell\{f_\theta(X_{ci}^{\mathrm{model}}),Y_{ci}^{\mathrm{model}}\}}
+      {\sum_{c=1}^C\sum_{i=1}^{s_c}w(X_{ci}^{\mathrm{model}})}
+ +\frac{0.01}{2}\|\theta_{-0}\|_2^2,
+\]
+where $\theta_{-0}$ excludes the intercept. We use linear logistic models for
+disease prediction and linear regression for air quality, standardizing the
+regression response on the source model-training sample. Unweighted uses
+the same coordinated predictor with $w\equiv1$.
+
+The local approach fits a separate weighted predictor at each source; its
+reported loss is the source-size-weighted average of those predictors' target
+losses. Consequently, its difference from GD reflects both ratio estimation
+and collaboration in fitting the predictor.
+
+We report five repetitions per hospital or station target and twenty spam
+splits. Hospital scores are averaged over repetitions and then equally over
+target hospitals. For air quality, we average target mean squared errors in
+the same way and then take the square root. For spam, we report the mean area
+under the precision--recall curve (AUPRC) across splits, computed on the combined
+evaluation emails. We also report source-size-weighted within-provider AUPRC
+to distinguish ranking across providers from ranking within each provider.
+Repetitions reuse the same public datasets; they are not independent population
+samples. The reported comparisons are descriptive rather than formal
+equivalence or noninferiority tests.
+
+\begin{table}[htbp]
+\centering
+\caption{Prediction at held-out hospitals and monitoring stations. Lower is
+better. The local approach uses separate predictors. All four hospitals and
+all twelve stations are included.}
+\label{tab:applications-natural}
+\medskip
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llrrrrr}
+\toprule
+Study & Metric & Unweighted & Local & GD & RF & Kernel \\
+\midrule
+Heart disease & Brier & 0.1730 & 0.2710 & 0.1630 & 0.1630 & 0.1676 \\
+Beijing air quality & RMSE & 51.13 & 55.79 & 51.43 & 51.43 & 52.01 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Cross-Hospital Heart Disease Prediction}
+
+The Heart Disease data contain records from Cleveland, Hungary, Switzerland,
+and VA Long Beach~\citep{janosi1989heart}. We use all four processed files,
+comprising $920$ patient records, and define disease presence as a recorded
+diagnosis greater than zero. Each hospital serves as the target in turn,
+with the other three hospitals as source clients. Predictors are age, sex,
+resting blood pressure, cholesterol, maximum heart rate, exercise-induced
+angina, ST depression, and fixed chest-pain indicators. Unknown values and
+zero blood-pressure, cholesterol, or heart-rate values are treated as missing.
+
+Patients are randomly assigned within their original hospital to model
+training ($25\%$), ratio fitting ($25\%$), ratio validation ($15\%$), and
+evaluation ($35\%$). For computational screening, each source contributes
+at most $80$ ratio-fitting, $80$ validation, and $160$ model-training records;
+the target contributes at most $240$ fitting, $80$ validation, and $480$
+evaluation records. The available hospital samples are often smaller than
+these caps. No target outcome is used to train the predictor.
+
+Table~\ref{tab:applications-natural} shows a mean target Brier score of
+$0.1630$ for GD, compared with $0.1730$ for Unweighted, $0.2710$ for the local
+approach, and $0.1676$ for Kernel. The improvement over Unweighted is approximately
+$5.8\%$. This average masks variation across hospitals: for Switzerland,
+GD reduces Brier score from $0.2237$ to $0.1558$, whereas Unweighted performs
+better at the other three targets. Thus the average benefit is concentrated
+in one hospital. Hospital-specific missingness and differences in the conditional disease
+distribution remain possible, so the study does not verify a pure
+covariate-shift model or establish clinical deployment performance.
+
+\subsection{Air-Quality Prediction Across Monitoring Stations}
+
+The Beijing Multi-Site Air Quality data contain hourly observations from
+twelve monitoring stations between March 2013 and February
+2017~\citep{chen2017beijing}. We predict measured daily mean PM$_{2.5}$ from
+temperature, pressure, dew point, precipitation, wind speed, and sine/cosine
+seasonal terms. Daily means require at least eighteen observed hours per
+variable. Days without an observed response are excluded, yielding $17164$
+station-days; missing predictors are imputed as described above. Other
+pollutants and station identifiers are excluded from the predictors.
+
+Each station is held out in turn, leaving eleven source clients. Calendar
+months are ordered into model training (first $25\%$), ratio fitting (next
+$35\%$), validation (next $10\%$), and evaluation (last $30\%$), with one
+complete month removed at each boundary. These roles are shared across
+stations. Consequently, the task involves both station transfer and temporal
+change. We use the same sample caps as in the hospital study, sampling within
+the assigned roles. Temporal separation avoids reusing neighboring days
+across role boundaries but does not establish independence.
+
+GD attains an aggregate target RMSE of $51.43\,\mu\mathrm{g}/\mathrm{m}^3$,
+compared with $52.01$ for Kernel and $55.79$ for the local approach.
+Its accuracy matches RF to the displayed precision.
+However, Unweighted achieves the lowest aggregate RMSE, $51.13$.
+This application therefore shows that distributed ratio estimation retains
+accuracy close to the pooled references at held-out stations, without an
+improvement from importance weighting. Spatial
+dependence, temporal change, and omitted pollution drivers can limit the
+usefulness of a correction based only on the observed covariates.
+
+\subsection{Positive-Unlabeled Spam Ranking}
+
+We use Spambase, which contains $4601$ labeled emails represented by $57$
+word-frequency, character-frequency, and capitalization
+features~\citep{hopkins1999spambase}. We construct a setting in which the
+server holds verified spam and three clients hold unlabeled emails.
+Training uses no labeled non-spam examples. Labels identify the server's
+positive reference sample and are otherwise reserved for evaluation.
+The email features and labels are observed, but provider allocation and
+the positive-unlabeled observation protocol are constructed.
+
+Let $q_+(x)$ be the positive-class density, $p(x)=\sum_c\pi_cp_c(x)$ the
+pooled email density, and $\alpha=\Pr(Y=1)$ the pooled spam prevalence.
+If verified positives represent the pooled positive class, Bayes' rule gives
+\[
+ \Pr(Y=1\mid X=x)=\alpha\,\frac{q_+(x)}{p(x)}.
+\]
+Thus estimating $q_+/p$ ranks spam without knowing $\alpha$. We make no
+claim of calibrated posterior probabilities. Local models instead estimate
+$q_+/p_c$, whose scores need not share the pooled ranking across providers.
+
+For each of twenty splits, disjoint pools supply up to $600$ unlabeled
+source records, $600$ verified positives, and $1200$ evaluation emails.
+The source and positive pools are each split $80\%/20\%$ for fitting and
+validation; the positive pool is typically smaller than its cap.
+Duplicate-record groups remain in a single pool. Heterogeneous provider
+ownership is assigned probabilistically using capitalization style, without
+labels, with at least $3\%$ assignment probability to every provider for
+every covariate value. A random-ownership control reallocates the same
+fitting, validation, and evaluation records while fixing the pooled problem
+and feature randomness. Local models score only their own provider's
+evaluation records. A positive-only Gaussian density estimator (KDE),
+selected by held-out positive log likelihood, assesses whether estimating
+the email-density denominator improves ranking. Scores are untruncated.
+
+\begin{table}[htbp]
+\centering
+\caption{Spam ranking: mean AUPRC over twenty splits; higher is better.
+KDE uses only the positive reference density. Changing ownership preserves
+the pooled task, so GD, RF, Kernel, and KDE have identical global results.}
+\label{tab:applications-spam}
+\medskip
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+Provider allocation & KDE & Local & GD & RF & Kernel \\
+\midrule
+Random & 0.6656 & 0.8338 & 0.8619 & 0.8611 & 0.8730 \\
+Heterogeneous & 0.6656 & 0.7720 & 0.8619 & 0.8611 & 0.8730 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Under heterogeneous ownership, GD attains AUPRC $0.8619$, compared with
+$0.6656$ for KDE and $0.7720$ for the local approach
+(Table~\ref{tab:applications-spam}). Its gap from Kernel is $0.0111$.
+Reallocating the same data randomly raises the local approach's AUPRC to $0.8338$ while
+leaving the global estimators unchanged. Within-provider AUPRC under
+heterogeneous ownership is $0.8476$ for GD and $0.8394$ for the local approach; this
+smaller difference indicates that much of the global gain concerns score
+comparability across providers. The study illustrates the value of a common
+pooled denominator for global ranking, under the assumption of representative
+verified positives.
+
+\begin{samepage}
+Across the three studies, GD retains accuracy close to pooled KuLSIF while
+keeping source observations local. Weighting improves average hospital
+prediction and global spam ranking, but not air-quality prediction.
+\end{samepage}

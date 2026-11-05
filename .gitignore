@@ -1,0 +1,15 @@
+.DS_Store
+.Rhistory
+.RData
+.Rproj.user/
+*.Rcheck/
+*.tar.gz
+__pycache__/
+reproduction/output/
+reproduction/engine/applications/data/
+reproduction/engine/results/
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg

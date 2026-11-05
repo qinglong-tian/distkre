@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using this metadata."
+type: software
+title: "distkre: Distributed Density-Ratio Estimation with Random Features"
+version: 0.1.0
+authors:
+  - family-names: Tian
+    given-names: Qinglong
+    email: qltian2021@gmail.com
+license: GPL-3.0-or-later

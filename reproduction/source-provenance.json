@@ -1,0 +1,132 @@
+{
+  "note": "Numerical helpers are frozen copies of the paper computations. Changes are limited to portable input/output paths, optional omission of plots for incomplete smoke/subset collections, and atomic job saving. The maintained package and frozen engine share the original estimator code.",
+  "files": [
+    {
+      "original": "R/kulsif.R",
+      "original_sha256": "21d66a5795589816263f5df417f8cd2a15037c26636317c15d93344b2cbe0341",
+      "release": "reproduction/engine/R/kulsif.R",
+      "release_sha256": "21d66a5795589816263f5df417f8cd2a15037c26636317c15d93344b2cbe0341"
+    },
+    {
+      "original": "R/simulate.R",
+      "original_sha256": "493cd6de831fd85437a61ac94508747062184d34118cd8e7fbf307cd4141443d",
+      "release": "reproduction/engine/R/simulate.R",
+      "release_sha256": "493cd6de831fd85437a61ac94508747062184d34118cd8e7fbf307cd4141443d"
+    },
+    {
+      "original": "R/utils.R",
+      "original_sha256": "708cd3b2168a2dc7e443b723441968a207d717a796212d24eef7b699d6ba32f4",
+      "release": "reproduction/engine/R/utils.R",
+      "release_sha256": "708cd3b2168a2dc7e443b723441968a207d717a796212d24eef7b699d6ba32f4"
+    },
+    {
+      "original": "R/dkre.R",
+      "original_sha256": "e974314273946732b2a5640e47603c8bf384120c0953724ffb9b08996572d42a",
+      "release": "reproduction/engine/R/dkre.R",
+      "release_sha256": "e974314273946732b2a5640e47603c8bf384120c0953724ffb9b08996572d42a"
+    },
+    {
+      "original": "R/baselines.R",
+      "original_sha256": "36262fee0e4339df8b2161289d27f3670797b7d00df7a863b4bbd166cf51dfd3",
+      "release": "reproduction/engine/R/baselines.R",
+      "release_sha256": "36262fee0e4339df8b2161289d27f3670797b7d00df7a863b4bbd166cf51dfd3"
+    },
+    {
+      "original": "R/fit.R",
+      "original_sha256": "8efbe48a1bee96595e1c160ae52f7179268c1c7574ba349843150dc7bd48104e",
+      "release": "reproduction/engine/R/fit.R",
+      "release_sha256": "8efbe48a1bee96595e1c160ae52f7179268c1c7574ba349843150dc7bd48104e"
+    },
+    {
+      "original": "R/random_features.R",
+      "original_sha256": "a688f2de1b691ca6166eb596b68aa82258fd66037f9203575adfc46d31e24466",
+      "release": "reproduction/engine/R/random_features.R",
+      "release_sha256": "a688f2de1b691ca6166eb596b68aa82258fd66037f9203575adfc46d31e24466"
+    },
+    {
+      "original": "simulations/configs/study.R",
+      "original_sha256": "ca9fc4059f312571bd0270264dc9b650734c29df6bb0024979eb04cca340cc36",
+      "release": "reproduction/engine/simulations/configs/study.R",
+      "release_sha256": "ca9fc4059f312571bd0270264dc9b650734c29df6bb0024979eb04cca340cc36"
+    },
+    {
+      "original": "simulations/R/core.R",
+      "original_sha256": "5d13977d6d5b4bfca833426f8c0222f961c41f8a959d988b64497b3d40dc0b85",
+      "release": "reproduction/engine/simulations/R/core.R",
+      "release_sha256": "5d13977d6d5b4bfca833426f8c0222f961c41f8a959d988b64497b3d40dc0b85"
+    },
+    {
+      "original": "simulations/R/studies.R",
+      "original_sha256": "1fbfe4a49a97df479e4569ea2890154e6cde426f86b98105a5d5213f43568c97",
+      "release": "reproduction/engine/simulations/R/studies.R",
+      "release_sha256": "1fbfe4a49a97df479e4569ea2890154e6cde426f86b98105a5d5213f43568c97"
+    },
+    {
+      "original": "simulations/summarize.R",
+      "original_sha256": "7db0ceb30b725741ab26874d8f62788c75b383e75039cdc858acc2a0f682a095",
+      "release": "reproduction/engine/simulations/summarize.R",
+      "release_sha256": "2a8da204dda65c9b67d9ed5910c5ca18754087d3ce8a73b5435eca532549c248"
+    },
+    {
+      "original": "simulations/tests/check-engine.R",
+      "original_sha256": "d4032c51d034bdec321cd28eeb4b6f015a93c1ffbc8b8e2543ab11cc0ce27489",
+      "release": "reproduction/engine/simulations/tests/check-engine.R",
+      "release_sha256": "d4032c51d034bdec321cd28eeb4b6f015a93c1ffbc8b8e2543ab11cc0ce27489"
+    },
+    {
+      "original": "applications/R/data.R",
+      "original_sha256": "20a3b40ff00c2ee0e3096c1ca98b6c82b685f2510e15b947239db7e7f1179f19",
+      "release": "reproduction/engine/applications/R/data.R",
+      "release_sha256": "c29e0ec537e68967123a24a51906cf703ebdbcfb6c404bc36a6c92f3f31deab2"
+    },
+    {
+      "original": "applications/R/protocol.R",
+      "original_sha256": "62012e4feb7bed126adc4c145192990bbdb74c1d09e7c9d73d5a21f5faa43244",
+      "release": "reproduction/engine/applications/R/protocol.R",
+      "release_sha256": "62012e4feb7bed126adc4c145192990bbdb74c1d09e7c9d73d5a21f5faa43244"
+    },
+    {
+      "original": "applications/R/expansion.R",
+      "original_sha256": "0e1553c5b7e2eb37a637f704fea2d9dfb5b622bba4ace05277ffe472e1d83e1d",
+      "release": "reproduction/engine/applications/R/expansion.R",
+      "release_sha256": "0e1553c5b7e2eb37a637f704fea2d9dfb5b622bba4ace05277ffe472e1d83e1d"
+    },
+    {
+      "original": "applications/local-comparison/fixtures.R",
+      "original_sha256": "cb978b270aefefac69b3db4f63a608c823e20ddba5b39c710a12ebbc8b4d6aab",
+      "release": "reproduction/engine/applications/local-comparison/fixtures.R",
+      "release_sha256": "cb978b270aefefac69b3db4f63a608c823e20ddba5b39c710a12ebbc8b4d6aab"
+    },
+    {
+      "original": "applications/local-comparison/methods.R",
+      "original_sha256": "3fb20f444ba7818046996ffbc6d0b4a4600d1054b783c6fd945915254ff28a58",
+      "release": "reproduction/engine/applications/local-comparison/methods.R",
+      "release_sha256": "3fb20f444ba7818046996ffbc6d0b4a4600d1054b783c6fd945915254ff28a58"
+    },
+    {
+      "original": "applications/local-comparison/pu.R",
+      "original_sha256": "11537a3fe3ad8166451419a456c09b02b52de5a89b8cb14c589c6524280c26e8",
+      "release": "reproduction/engine/applications/local-comparison/pu.R",
+      "release_sha256": "11537a3fe3ad8166451419a456c09b02b52de5a89b8cb14c589c6524280c26e8"
+    },
+    {
+      "original": "applications/natural-domains/data.R",
+      "original_sha256": "4733a5c9c4fd70229ffa45ceacfe7c36f7e1581258b9d690dc83762d8a7a52b8",
+      "release": "reproduction/engine/applications/natural-domains/data.R",
+      "release_sha256": "4733a5c9c4fd70229ffa45ceacfe7c36f7e1581258b9d690dc83762d8a7a52b8"
+    },
+    {
+      "original": "applications/tests/check-pu-local.R",
+      "original_sha256": "1a3e75f55236f4a70be8ad25ad89274a0430866475c0ce1e4846b642941b80d4",
+      "release": "reproduction/engine/applications/tests/check-pu-local.R",
+      "release_sha256": "1a3e75f55236f4a70be8ad25ad89274a0430866475c0ce1e4846b642941b80d4"
+    }
+  ],
+  "job_extraction": {
+    "original": "applications/run-natural-domains.R",
+    "original_sha256": "d85b7ee1a64757b8bcfcdbdf923c74aac6a930cb9d7a6dae4c5e95ce28317517",
+    "release": "reproduction/engine/natural-job.R",
+    "release_sha256": "7e63dc147b093d22a72261a1f6da3eaeb84d12715a4a9f3ad1d7a172174e24a8",
+    "change": "Original per-job computation extracted; saveRDS replaced by atomic_rds."
+  }
+}

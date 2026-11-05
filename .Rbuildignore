@@ -1,0 +1,16 @@
+^\.git$
+^\.github$
+^\.gitignore$
+^\.gitattributes$
+^reproduction$
+^docs$
+^examples$
+^paper$
+^CITATION\.cff$
+^CONTRIBUTING\.md$
+^Makefile$
+^METHODOLOGY\.md$
+^LICENSE$
+^PUBLICATION_CHECKS\.md$
+^distkre_.*\.tar\.gz$
+^.*\.Rcheck$

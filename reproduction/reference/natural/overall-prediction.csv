@@ -1,0 +1,11 @@
+dataset,method,task,value
+heart,LocalKernel,target_Brier,0.271026807792559
+heart,PooledKernel,target_Brier,0.167629205357888
+heart,PooledRF,target_Brier,0.162970569945035
+heart,Proposed,target_Brier,0.162970569923263
+heart,Unweighted,target_Brier,0.173002918794386
+beijing,LocalKernel,target_RMSE,55.7882163610893
+beijing,PooledKernel,target_RMSE,52.0060005815129
+beijing,PooledRF,target_RMSE,51.4274807135902
+beijing,Proposed,target_RMSE,51.4274807208577
+beijing,Unweighted,target_RMSE,51.1317120287375

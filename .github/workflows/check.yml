@@ -1,0 +1,62 @@
+name: Package and paper checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+      - name: Build and check package
+        shell: bash
+        run: |
+          R CMD build .
+          R CMD check --no-manual distkre_0.1.0.tar.gz
+      - name: Run installed examples
+        shell: bash
+        run: |
+          R CMD INSTALL .
+          Rscript examples/quickstart.R
+          Rscript examples/client-server.R
+          Rscript examples/tuning.R
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: package-check-${{ matrix.os }}
+          path: distkre.Rcheck/
+  reproduction:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check publication snapshot
+        run: python3 reproduction/verify-release.py
+      - name: Rebuild paper outputs from archived metrics
+        run: Rscript reproduction/reproduce.R --mode=reference
+      - name: Check frozen numerical engine
+        run: Rscript -e 'setwd("reproduction/engine"); source("simulations/tests/check-engine.R")'
+      - name: Download verified data and replay published fixtures
+        run: |
+          python3 reproduction/fetch-data.py
+          Rscript reproduction/tests/check-replay.R
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reproduced-paper-outputs
+          path: reproduction/output/

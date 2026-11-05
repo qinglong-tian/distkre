@@ -1,0 +1,19 @@
+Package: distkre
+Type: Package
+Title: Distributed Density-Ratio Estimation with Random Features
+Version: 0.1.0
+Authors@R: person("Qinglong", "Tian", role = c("aut", "cre"),
+    email = "qltian2021@gmail.com")
+Author: Qinglong Tian [aut, cre]
+Maintainer: Qinglong Tian <qltian2021@gmail.com>
+Description: A direct implementation of distributed kernel unconstrained
+    least-squares importance fitting (KuLSIF) using shared random Fourier
+    features. The package implements the normalized random-feature KuLSIF
+    estimator, its closed-form solution, the distributed gradient-descent
+    algorithm from the accompanying draft, kernel KuLSIF baselines, Gaussian
+    kernel-density-ratio baselines, and simulation utilities.
+License: GPL (>= 3)
+Encoding: UTF-8
+Depends: R (>= 4.1.0)
+Imports: stats
+RoxygenNote: 7.3.2

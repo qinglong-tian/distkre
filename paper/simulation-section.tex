@@ -1,0 +1,275 @@
+\section{Simulation Study}\label{Sec: simulation}
+
+We investigate three questions: whether the distributed estimator retains the
+accuracy of pooled KuLSIF, how optimization accuracy depends on communication,
+and how heterogeneous client distributions and unequal sample sizes affect
+estimation. The experiments distinguish the statistical performance of the
+pooled estimator from the effects of random-feature approximation and finite
+optimization.
+
+\paragraph{Data-generating model.}
+We consider $C=4$ clients and $d=5$ covariates. Let
+$F_c=\mathcal{N}_5(\mu_c,I_5)$, where
+\[
+\mu_1=(-1,-1,0,0,0)^\top,\quad
+\mu_2=(-1,1,0,0,0)^\top,\quad
+\mu_3=(1,-1,0,0,0)^\top,\quad
+\mu_4=(1,1,0,0,0)^\top.
+\]
+Unless otherwise specified, client $c$ samples from $P_c=F_c$, the source
+proportions are $\pi_c=1/4$, and
+\[
+P=\sum_{c=1}^4\pi_cF_c,\qquad
+Q=\sum_{c=1}^4\rho_cF_c,\qquad
+(\rho_1,\rho_2,\rho_3,\rho_4)=(0.05,0.15,0.30,0.50).
+\]
+Writing $f_c$ for the density of $F_c$, the true ratio is
+\[
+r^*(x)=\frac{\sum_{c=1}^4\rho_cf_c(x)}
+                 {\sum_{c=1}^4\pi_cf_c(x)}.
+\]
+This construction yields a nonlinear density ratio that can be evaluated
+exactly, allowing us to assess estimation accuracy against the known truth.
+
+\paragraph{Methods and parameter selection.}
+We compare distributed gradient descent (GD; Algorithm~\ref{alg:gd}),
+closed-form random-feature KuLSIF (RF; equation~\eqref{eq: RF-linear-coef}),
+and pooled Gaussian-kernel KuLSIF (Kernel). The pooled kernel method is an
+accuracy reference requiring centralized source data. We use
+$K_\sigma(x,x')=\exp\{-\|x-x'\|_2^2/(2\sigma^2)\}$ and its cosine random
+features, with $R=200$ unless stated otherwise. GD starts at zero and uses
+$\eta=(2+\lambda)^{-1}$, corresponding to the uniform bound of $2$ on the
+squared cosine feature functions. Its server receives only client
+matrix--vector products, not source observations or second-moment matrices.
+All reported predictions are untruncated.
+
+Let $N$ and $M$ denote the total available source and target sample sizes.
+Each client's source sample and the target sample are split into $80\%$
+fitting data and $20\%$ validation data. Thus the sample sizes entering the
+estimators are $n=0.8N$ and $m=0.8M$, and the client weights are the fitting
+proportions $\pi_c=n_c/n$. The default setting is $(N,M)=(2000,1000)$.
+For the sample-size and unequal-size comparisons, each KuLSIF method selects
+its parameters separately by minimizing
+\[
+\widehat{\mathcal V}(r)
+=\frac12\sum_{c=1}^C\frac{\pi_c}{v_c}
+  \sum_{i=1}^{v_c}r(X_{ci}^{\mathrm{val}})^2
+-\frac{1}{v_Q}\sum_{j=1}^{v_Q}r(Z_j^{\mathrm{val}}),
+\]
+where $v_c$ and $v_Q$ are the corresponding validation sample sizes.
+We search $\lambda\in\{10^{-4},10^{-3},10^{-2},10^{-1},1\}$ and
+$\sigma\in\{0.5,1,2\}\sigma_0$, where $\sigma_0$ is the median pairwise
+distance among the fitting target observations. GD uses $5000$ updates for
+each candidate and $10000$ updates for the final fit at the selected
+parameters, using only the fitting observations. RF and GD share the same
+feature-generation randomness within each replication. The optimization and
+controlled-heterogeneity experiments instead use matched parameters, as
+specified below, to isolate their respective mechanisms.
+
+\paragraph{Evaluation and Monte Carlo uncertainty.}
+For each replication, we generate an independent stratified test sample
+$\{X_{cs}^{\mathrm{test}}:s\in[S_c]\}$ from the client laws, with
+$\sum_cS_c=20000$ and $S_c$ proportional to $\pi_c$. We report
+\[
+\operatorname{RMSE}(\widehat r)
+=\left\{\sum_{c=1}^C\frac{\pi_c}{S_c}
+\sum_{s=1}^{S_c}
+\bigl[\widehat r(X_{cs}^{\mathrm{test}})
+      -r^*(X_{cs}^{\mathrm{test}})\bigr]^2\right\}^{1/2},
+\]
+which approximates $\|\widehat r-r^*\|_{L^2(P)}$.
+Methods share fitting, validation, and test samples within each replication.
+The tables report the mean of the replicate RMSEs, with Monte Carlo standard
+errors (MCSEs) in parentheses. We use $100$ replications for each controlled
+mechanism setting and $200$--$500$ for each tuned setting. Counts for the
+latter were determined from separate pilot variance estimates, targeting a
+paired MCSE of $0.0025$ for GD versus the RF and Kernel references, with a
+cap of $500$; the cap does not guarantee this precision in every setting.
+The $240$ pilot datasets are excluded from the $3306$ production datasets.
+No numerical fitting failures occurred. On three independent integration-check
+datasets, increasing the test size from $20000$ to $100000$ changed RMSE
+by less than $0.0006$ for the estimators checked.
+
+\subsection{Estimation Accuracy as Sample Sizes Increase}
+\label{Sec: simulation-accuracy}
+
+We vary $N\in\{1000,2000,4000,8000\}$ with $M=1000$ and
+$M\in\{250,500,1000,2000\}$ with $N=2000$. The default setting is shared
+between these comparisons. The full-kernel and random-feature references
+are evaluated at every sample size.
+
+\begin{table}[htbp]
+\centering
+\caption{Estimation accuracy: mean independent-test RMSE with MCSE in
+parentheses. $N$ and $M$ include validation observations; $L$ is the number
+of production replications.}
+\label{tab:simulation-accuracy}
+\small
+\begin{tabular}{rrrccc}
+\toprule
+$N$ & $M$ & $L$ & GD & RF & Kernel \\
+\midrule
+1000 & 1000 & 500 & 0.2328 (0.0036) & 0.2292 (0.0031) & 0.2273 (0.0033) \\
+2000 & 1000 & 306 & 0.2075 (0.0024) & 0.2064 (0.0026) & 0.2061 (0.0028) \\
+4000 & 1000 & 200 & 0.2032 (0.0032) & 0.2020 (0.0033) & 0.2023 (0.0035) \\
+8000 & 1000 & 200 & 0.1947 (0.0027) & 0.1939 (0.0027) & 0.1906 (0.0026) \\
+\midrule
+2000 & 250  & 500 & 0.2836 (0.0047) & 0.2790 (0.0044) & 0.2791 (0.0045) \\
+2000 & 500  & 500 & 0.2356 (0.0029) & 0.2326 (0.0028) & 0.2313 (0.0030) \\
+2000 & 2000 & 200 & 0.1971 (0.0028) & 0.1965 (0.0029) & 0.1934 (0.0034) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:simulation-accuracy} shows that distributed estimation achieves
+accuracy close to the pooled references. At the default sample sizes, GD,
+RF, and Kernel attain mean RMSEs of $0.2075$, $0.2064$, and $0.2061$,
+respectively. Increasing the source sample size from $1000$ to $8000$
+reduces GD RMSE from $0.2328$ to $0.1947$, while increasing the target
+sample size from $250$ to $2000$ reduces it from $0.2836$ to $0.1971$.
+Both source and target observations therefore improve accuracy, with smaller
+gains at the larger sample sizes considered. GD nevertheless has a slightly
+higher mean RMSE than RF in these comparisons. For example, at
+$(N,M)=(1000,1000)$, the paired mean RMSE of GD exceeds that of RF by
+$0.0036$, with a $95\%$ bootstrap confidence interval of
+$[0.0003,0.0072]$ based on $2000$ dataset-level resamples. Thus the methods
+have similar accuracy, with a small observed disadvantage for GD in this
+setting. Because GD and RF select their parameters separately, the difference
+can reflect both finite optimization and parameter selection. The next
+experiment uses identical parameters to isolate optimization error.
+
+\subsection{Optimization and the Accuracy--Communication Trade-off}
+\label{Sec: simulation-communication}
+
+At the default sample sizes, we vary $R\in\{50,200,400\}$ and
+$\lambda\in\{0.001,0.01,0.1\}$, fixing $\sigma=\sigma_0$.
+For each replication and parameter combination, GD and RF use identical
+data and feature maps. Features are nested across $R$ using a common master
+draw of frequencies and phases. We record the objective gap relative to
+the exact RF solution, prediction discrepancies, and test RMSE along the
+GD trajectory, through $20000$ updates. We also compare feature dimensions
+at fixed communication budgets
+$W\in\{10^5,4\times10^5,1.6\times10^6,6.4\times10^6\}$, allowing
+$T=\lfloor W/(2CR)\rfloor$ updates.
+
+Communication is measured in transmitted scalar coordinates. GD fitting
+requires $2CRT$ coordinates, whereas transmitting the upper triangle of
+each symmetric client second-moment matrix requires $CR(R+1)/2$.
+These are fitting costs: initialization, validation and parameter tuning,
+and optional final-model delivery are accounted for separately. The
+experiment simulates the client/server interface on one computer and does
+not measure network latency.
+
+\begin{table}[htbp]
+\centering
+\caption{Descriptive communication comparison at $\lambda=0.01$ over
+$100$ replications. $T_{2\%}$ is the first recorded checkpoint whose mean
+GD test RMSE is no greater than $1.02$ times the mean RF test RMSE.
+Costs are scalar coordinates; the final column is GD cost divided
+by symmetric-matrix cost. This test-based summary is not a stopping rule.}
+\label{tab:simulation-communication}
+\small
+\begin{tabular}{rcrrrr}
+\toprule
+$R$ & RF RMSE & $T_{2\%}$ & Matrix cost & GD cost & Cost ratio \\
+\midrule
+50  & 0.2053 & 500 & 5100   & 200000 & 39.22 \\
+200 & 0.1891 & 200 & 80400  & 320000 & 3.98 \\
+400 & 0.1859 & 200 & 320800 & 640000 & 2.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The trajectories approach the matched RF solution as optimization proceeds.
+Table~\ref{tab:simulation-communication} illustrates the resulting trade-off
+at $\lambda=0.01$. Increasing $R$ improves the closed-form reference RMSE
+from $0.2053$ to $0.1859$, but increases the cost of every GD round.
+Consequently, a larger feature representation must be balanced against
+the number of affordable updates.
+
+Vector exchanges reduce the payload of each round from a quadratic to a
+linear dependence on $R$, but this does not imply a smaller cumulative
+payload. In the displayed settings, approaching the RF mean RMSE within
+$2\%$ costs more than one-time symmetric-matrix aggregation. The empirical
+benefit is therefore an adjustable, vector-only optimization procedure with
+an explicit accuracy--communication trade-off; these results do not establish
+a uniform reduction in total communication.
+
+\subsection{Heterogeneous Client Laws and Unequal Client Sizes}
+\label{Sec: simulation-heterogeneity}
+
+We first vary client heterogeneity while keeping the pooled estimation
+problem fixed. With $\pi_c=1/4$, define
+\[
+P_c^{(\tau)}=(1-\tau)P+\tau F_c,
+\qquad \tau\in\{0,0.5,1\}.
+\]
+Then $\sum_c\pi_cP_c^{(\tau)}=P$ for every $\tau$, while $Q$ is unchanged.
+Clients range from identically distributed at $\tau=0$ to
+component-specific at $\tau=1$. We fix $\lambda=0.01$,
+$\sigma=\sigma_0$, $R=200$, and $T=1000$. Kernel uses the same bandwidth
+and regularization. This matched-parameter comparison isolates
+heterogeneity rather than independently optimizing each method.
+
+We additionally consider naive local KuLSIF: client $c$ estimates $q/p_c$
+using its own source observations and the target sample. For this diagnostic,
+the prediction at a test point drawn from client $c$ is that client's fitted
+ratio. Its error against the pooled truth is aggregated using $\pi_c$.
+Thus the local procedure supplies client-dependent predictions and targets
+different ratios; it is not an estimator of a single pooled ratio.
+
+\begin{table}[htbp]
+\centering
+\caption{Controlled heterogeneity with fixed pooled $P$ and target $Q$:
+mean RMSE with MCSE in parentheses, over $100$ replications per setting.
+Local denotes the client-specific diagnostic described in the text.}
+\label{tab:simulation-heterogeneity}
+\small
+\begin{tabular}{ccccc}
+\toprule
+$\tau$ & GD & RF & Kernel & Local \\
+\midrule
+0   & 0.1915 (0.0020) & 0.1915 (0.0020) & 0.1878 (0.0019) & 0.2163 (0.0018) \\
+0.5 & 0.1900 (0.0016) & 0.1900 (0.0016) & 0.1839 (0.0017) & 0.5525 (0.0032) \\
+1   & 0.1894 (0.0018) & 0.1894 (0.0018) & 0.1845 (0.0018) & 1.1578 (0.0044) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:simulation-heterogeneity} shows stable distributed accuracy:
+GD RMSE remains close to $0.19$ throughout and agrees with RF to the
+reported precision. In contrast, the local diagnostic error increases
+from $0.2163$ to $1.1578$. This contrast illustrates the importance of
+estimating the pooled ratio: heterogeneity need not substantially impair
+the proposed estimator, whereas client-specific ratios increasingly differ
+from the required pooled importance weights. Small changes across $\tau$
+are possible because the stratified sampling variance also changes.
+
+Finally, we set $P_c=F_c$ and
+$\pi=(0.7,0.1,0.1,0.1)$, retaining $(N,M)=(2000,1000)$ and the same $Q$.
+We recompute the pooled truth, whose upper bound is now $5$, and use the
+validation-based tuning protocol. Over $500$ replications, GD achieves
+RMSE $0.4197$ (MCSE $0.0036$), compared with $0.4232$ ($0.0040$) for RF
+and $0.4292$ ($0.0056$) for Kernel. Replacing the correct client weights
+with uniform weights, while retaining GD's selected parameters, feature
+map, and iteration count, increases RMSE to $0.8968$ ($0.0017$).
+This controlled ablation demonstrates the practical importance of
+sample-proportion weighting. The balanced and unequal-size designs have
+different pooled source laws and true ratios, so their difference in RMSE
+cannot be attributed solely to unequal client sample sizes.
+
+\paragraph{Additional diagnostic and scope.}
+We also evaluated the raw ratio of pooled Gaussian kernel density estimates,
+selecting source and target bandwidths by the same validation criterion over
+the nine pairs of $\{0.5,1,2\}$ times their respective fitting-data
+normal-reference bandwidths in the tuned settings. Controlled-heterogeneity
+settings used the normal-reference bandwidths without tuning. Of $3206$
+selected KDE fits, $356$ have provably infinite conditional population
+$L^2(P)$ risk under the Gaussian-tail diagnostic, despite the bounded true
+ratio. Their finite-test errors are therefore descriptive and are not used
+to claim general superiority over KDE. No denominator floor or clipping
+was introduced. Overall, the three experiments support accurate pooled-ratio
+estimation across the client configurations studied and quantify its
+optimization--communication trade-off. The conclusions concern this
+five-dimensional mixture family; they do not establish general robustness
+or verify the theoretical convergence rates.
